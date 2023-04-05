@@ -1,24 +1,15 @@
-//
-//  AddContactVC.swift
-//  Contacts
-//
-//  Created by Bekzhan on 06.01.2023.
-//
-
 import UIKit
 
-
 protocol AddContactProtocol {
-    func save(name: String, phone: String, image: UIImage)
+    func save(name: String, phone: String)
 }
 
 class AddContactVC: UIViewController {
     
     var delegate: AddContactProtocol?
+    var contactImageData: Data? // Optional data for the contact image
     
     var timer: Timer!
-    
-    var gender = ""
     
     var nameTextField: UITextField = {
         let textfield = UITextField()
@@ -42,20 +33,10 @@ class AddContactVC: UIViewController {
         return textfield
     }()
     
-    var genderSegmentController: UISegmentedControl = {
-        let items = ["Male", "Female"]
-        
-        let segmentedControl = UISegmentedControl(items: items)
-        segmentedControl.addTarget(self, action: #selector(suitDidChange(_:)), for: .valueChanged)
-//        segmentedControl.selectedSegmentIndex = 
-        segmentedControl.translatesAutoresizingMaskIntoConstraints = false
-        return segmentedControl
-    }()
-    
     var saveButton: UIButton = {
         let button = CustomButton(backgroundColor: .systemBlue, title: "Save")
         button.layer.cornerRadius = 8
-        button.addTarget(self, action: #selector(handleSave), for: .touchUpInside)
+        button.addTarget(self, action: #selector(handleSave(_:)), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -68,23 +49,19 @@ class AddContactVC: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    
-    @objc func suitDidChange(_ segmentedControl: UISegmentedControl) {
-        switch segmentedControl.selectedSegmentIndex {
-        case 0: gender = "male"
-        case 1: gender = "female"
-        default:
-            print("lalala")
-        }
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
-
         nameTextField.delegate = self
         phoneTextField.delegate = self
         setupView()
+        
+        // Display the contact image if available
+        if let imageData = contactImageData {
+            let image = UIImage(data: imageData)
+            // Here, you can display 'image' in your UI
+        }
     }
     
     func startTimer() {
@@ -101,7 +78,6 @@ extension AddContactVC {
     func setupView() {
         view.addSubview(nameTextField)
         view.addSubview(phoneTextField)
-        view.addSubview(genderSegmentController)
         view.addSubview(errorLabel)
         view.addSubview(saveButton)
         setupConstraints()
@@ -124,12 +100,7 @@ extension AddContactVC {
         ])
         
         NSLayoutConstraint.activate([
-            genderSegmentController.centerXAnchor.constraint(equalTo: self.view.centerXAnchor),
-            genderSegmentController.topAnchor.constraint(equalTo: phoneTextField.bottomAnchor, constant: 50)
-        ])
-        
-        NSLayoutConstraint.activate([
-            errorLabel.topAnchor.constraint(equalTo: genderSegmentController.bottomAnchor, constant: 20),
+            errorLabel.topAnchor.constraint(equalTo: phoneTextField.bottomAnchor, constant: 20),
             errorLabel.heightAnchor.constraint(equalToConstant: 44),
             errorLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             errorLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
@@ -143,22 +114,20 @@ extension AddContactVC {
         ])
     }
     
-    @objc func handleSave() {
-        if nameTextField.text != "" && phoneTextField.text != "" && gender != "" {
-            delegate?.save(name: nameTextField.text!, phone: phoneTextField.text!, image: UIImage(named: gender)!)
+    @objc func handleSave(_ sender: UIButton) {
+        if nameTextField.text != "" && phoneTextField.text != "" {
+            delegate?.save(name: nameTextField.text!, phone: phoneTextField.text!)
             dismiss(animated: true, completion: nil)
         } else {
             errorLabel.textColor = .systemRed
         }
         
         startTimer()
-        print(gender)
     }
 }
 
-//мынау астыдағы код кәдімгі телефонға шығарғанда, TextField - ті толтырғанда клавиатура шығады ғо, соған байланысты :)
+// Handle dismissing keyboard
 extension AddContactVC: UITextFieldDelegate {
-    
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         self.view.endEditing(true)
     }

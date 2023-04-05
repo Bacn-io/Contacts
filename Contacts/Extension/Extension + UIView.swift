@@ -1,10 +1,3 @@
-//
-//  Extension + UIView.swift
-//  Contacts
-//
-//  Created by Bekzhan on 07.01.2023.
-//
-
 import UIKit
 
 extension UIView {

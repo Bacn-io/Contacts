@@ -22,7 +22,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		164C43942968920900D39FCB /* Contacts.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Contacts.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		164C43942968920900D39FCB /* MyPeeps.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyPeeps.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		164C43972968920900D39FCB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		164C43992968920900D39FCB /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		164C439B2968920900D39FCB /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -60,7 +60,7 @@
 		164C43952968920900D39FCB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				164C43942968920900D39FCB /* Contacts.app */,
+				164C43942968920900D39FCB /* MyPeeps.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -120,9 +120,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		164C43932968920900D39FCB /* Contacts */ = {
+		164C43932968920900D39FCB /* MyPeeps */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 164C43A82968920A00D39FCB /* Build configuration list for PBXNativeTarget "Contacts" */;
+			buildConfigurationList = 164C43A82968920A00D39FCB /* Build configuration list for PBXNativeTarget "MyPeeps" */;
 			buildPhases = (
 				164C43902968920900D39FCB /* Sources */,
 				164C43912968920900D39FCB /* Frameworks */,
@@ -132,9 +132,9 @@
 			);
 			dependencies = (
 			);
-			name = Contacts;
+			name = MyPeeps;
 			productName = Contacts;
-			productReference = 164C43942968920900D39FCB /* Contacts.app */;
+			productReference = 164C43942968920900D39FCB /* MyPeeps.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -145,14 +145,14 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1420;
-				LastUpgradeCheck = 1420;
+				LastUpgradeCheck = 1530;
 				TargetAttributes = {
 					164C43932968920900D39FCB = {
 						CreatedOnToolsVersion = 14.2;
 					};
 				};
 			};
-			buildConfigurationList = 164C438F2968920900D39FCB /* Build configuration list for PBXProject "Contacts" */;
+			buildConfigurationList = 164C438F2968920900D39FCB /* Build configuration list for PBXProject "MyPeeps" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -165,7 +165,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				164C43932968920900D39FCB /* Contacts */,
+				164C43932968920900D39FCB /* MyPeeps */,
 			);
 		};
 /* End PBXProject section */
@@ -258,6 +258,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -272,7 +273,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -318,6 +319,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -326,7 +328,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -351,12 +353,13 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = company.com.Contacts;
+				PRODUCT_BUNDLE_IDENTIFIER = company.com.MyPeeps;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -379,12 +382,13 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = company.com.Contacts;
+				PRODUCT_BUNDLE_IDENTIFIER = company.com.MyPeeps;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -395,7 +399,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		164C438F2968920900D39FCB /* Build configuration list for PBXProject "Contacts" */ = {
+		164C438F2968920900D39FCB /* Build configuration list for PBXProject "MyPeeps" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				164C43A62968920A00D39FCB /* Debug */,
@@ -404,7 +408,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		164C43A82968920A00D39FCB /* Build configuration list for PBXNativeTarget "Contacts" */ = {
+		164C43A82968920A00D39FCB /* Build configuration list for PBXNativeTarget "MyPeeps" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				164C43A92968920A00D39FCB /* Debug */,

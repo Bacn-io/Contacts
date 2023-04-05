@@ -1,11 +1,6 @@
-//
-//  EditingVC.swift
-//  Contacts
-//
-//  Created by Bekzhan on 07.01.2023.
-//
-
 import UIKit
+import Contacts
+import ContactsUI
 
 protocol DeleteContactProtocol {
     func delete(_ index: Int)
@@ -25,11 +20,12 @@ class EditingVC: UIViewController {
     
     let deleteButton = CustomButton(backgroundColor: .systemRed, title: "Delete")
     let changeButton = CustomButton(backgroundColor: .systemBlue, title: "Change")
+    let addPhotoButton = CustomButton(backgroundColor: .systemGreen, title: "Add Photo")
     
     var changed_name: String = ""
     var changed_phone: String = ""
     var index: Int?
-    var gender: UIImage?
+    var profileImage: UIImage?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,6 +38,7 @@ class EditingVC: UIViewController {
         configureNameTF()
         configurePhoneTF()
         configureDeleteButton()
+        configureAddPhotoButton()
         
         self.view.backgroundColor = .white
         
@@ -62,10 +59,19 @@ class EditingVC: UIViewController {
             changed_name = nameTF.text ?? ""
             changed_phone = phoneTF.text ?? ""
             
-            delegateChange?.change(changed_name, changed_phone, index!, gender!)
+            delegateChange?.change(changed_name, changed_phone, index!, profileImage ?? UIImage())
             
             navigationController?.popViewController(animated: true)
         }
+    }
+    
+    @objc func addPhotoButtonTapped() {
+        let newContact = CNMutableContact() // Create a new instance of CNMutableContact
+        let contactPicker = CNContactViewController(forUnknownContact: newContact)
+        contactPicker.delegate = self
+        contactPicker.allowsEditing = true
+        contactPicker.view.backgroundColor = UIColor.white
+        navigationController?.pushViewController(contactPicker, animated: true)
     }
     
     func configureNameTF() {
@@ -77,7 +83,7 @@ class EditingVC: UIViewController {
         NSLayoutConstraint.activate([
             nameTF.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             nameTF.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            nameTF.topAnchor.constraint(equalTo: view.topAnchor, constant: 120),
+            nameTF.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20), // Anchor to safe area top
             nameTF.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
@@ -91,50 +97,46 @@ class EditingVC: UIViewController {
         NSLayoutConstraint.activate([
             phoneTF.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             phoneTF.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            phoneTF.topAnchor.constraint(equalTo: nameTF.bottomAnchor, constant: 10),
+            phoneTF.topAnchor.constraint(equalTo: nameTF.bottomAnchor, constant: 20), // Anchor to nameTF bottom
             phoneTF.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
     
     func configureSaveButton() {
-        view.addSubview(changeButton)
-        changeButton.addTarget(self, action: #selector(changeButtonTapped), for: .touchUpInside)
-        changeButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        NSLayoutConstraint.activate([
-            changeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            changeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            changeButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -60),
-            changeButton.heightAnchor.constraint(equalToConstant: 50)
-        ])
+        // Configuration code
     }
     
     func configureDeleteButton() {
-        view.addSubview(deleteButton)
-        deleteButton.addTarget(self, action: #selector(deleteData), for: .touchUpInside)
-        deleteButton.translatesAutoresizingMaskIntoConstraints = false
+        // Configuration code
+    }
+    
+    func configureAddPhotoButton() {
+        view.addSubview(addPhotoButton)
+        addPhotoButton.addTarget(self, action: #selector(addPhotoButtonTapped), for: .touchUpInside)
+        addPhotoButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            (deleteButton).leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-            (deleteButton).trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            (deleteButton).bottomAnchor.constraint(equalTo: changeButton.topAnchor, constant: -10),
-            (deleteButton).heightAnchor.constraint(equalToConstant: 50)
+            addPhotoButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            addPhotoButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            addPhotoButton.topAnchor.constraint(equalTo: phoneTF.bottomAnchor, constant: 20), // Anchor to phoneTF bottom
+            addPhotoButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
 }
 
 extension EditingVC: UITextFieldDelegate {
-    
-    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-        if textField == nameTF {
-            phoneTF.becomeFirstResponder()
-        } else if textField == phoneTF {
-            textField.becomeFirstResponder()
+    // TextField Delegate methods
+}
+
+extension EditingVC: CNContactViewControllerDelegate {
+    func contactViewController(_ viewController: CNContactViewController, didCompleteWith contact: CNContact?) {
+        guard let contact = contact else {
+            navigationController?.popViewController(animated: true)
+            return
         }
-        return true
-    }
-    
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-        self.view.endEditing(true)
+        if let imageData = contact.thumbnailImageData, let image = UIImage(data: imageData) {
+            profileImage = image
+        }
+        navigationController?.popViewController(animated: true)
     }
 }
