@@ -1,15 +1,13 @@
 import UIKit
+import Contacts
 
 protocol AddContactProtocol {
-    func save(name: String, phone: String)
+    func save(name: String, phone: String, addToDeviceContacts: Bool)
 }
 
 class AddContactVC: UIViewController {
     
     var delegate: AddContactProtocol?
-    var contactImageData: Data? // Optional data for the contact image
-    
-    var timer: Timer!
     
     var nameTextField: UITextField = {
         let textfield = UITextField()
@@ -34,95 +32,75 @@ class AddContactVC: UIViewController {
     }()
     
     var saveButton: UIButton = {
-        let button = CustomButton(backgroundColor: .systemBlue, title: "Save")
+        let button = UIButton(type: .system)
+        button.setTitle("Save", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .systemBlue
         button.layer.cornerRadius = 8
         button.addTarget(self, action: #selector(handleSave(_:)), for: .touchUpInside)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    var errorLabel: UILabel = {
-        let label = UILabel()
-        label.text = "Please fill in all text fields!!!"
-        label.textColor = .white
-        label.textAlignment = .center
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
+    var addToDeviceContactsSwitch: UISwitch = {
+        let uiSwitch = UISwitch()
+        uiSwitch.isOn = true // Default to saving to device contacts
+        uiSwitch.translatesAutoresizingMaskIntoConstraints = false
+        return uiSwitch
     }()
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
         nameTextField.delegate = self
         phoneTextField.delegate = self
         setupView()
-        
-        // Display the contact image if available
-        if let imageData = contactImageData {
-            let image = UIImage(data: imageData)
-            // Here, you can display 'image' in your UI
-        }
     }
     
-    func startTimer() {
-        timer = Timer.scheduledTimer(timeInterval: 2, target: self, selector: #selector(stopTimer), userInfo: nil, repeats: true)
-    }
-    
-    @objc func stopTimer() {
-        errorLabel.textColor = .white
-        timer.invalidate()
-    }
-}
-
-extension AddContactVC {
     func setupView() {
         view.addSubview(nameTextField)
         view.addSubview(phoneTextField)
-        view.addSubview(errorLabel)
         view.addSubview(saveButton)
+        view.addSubview(addToDeviceContactsSwitch)
         setupConstraints()
     }
     
     func setupConstraints() {
-        
+        // Constraints for nameTextField
         NSLayoutConstraint.activate([
-            nameTextField.topAnchor.constraint(equalTo: view.topAnchor, constant: 57),
-            nameTextField.heightAnchor.constraint(equalToConstant: 44),
-            nameTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            nameTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            nameTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            nameTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            nameTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
         
+        // Constraints for phoneTextField
         NSLayoutConstraint.activate([
-            phoneTextField.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 20),
-            phoneTextField.heightAnchor.constraint(equalToConstant: 44),
-            phoneTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            phoneTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            phoneTextField.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 10),
+            phoneTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            phoneTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
         
+        // Constraints for addToDeviceContactsSwitch
         NSLayoutConstraint.activate([
-            errorLabel.topAnchor.constraint(equalTo: phoneTextField.bottomAnchor, constant: 20),
-            errorLabel.heightAnchor.constraint(equalToConstant: 44),
-            errorLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            errorLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            addToDeviceContactsSwitch.topAnchor.constraint(equalTo: phoneTextField.bottomAnchor, constant: 10),
+            addToDeviceContactsSwitch.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
         
+        // Constraints for saveButton
         NSLayoutConstraint.activate([
-            saveButton.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -32),
-            saveButton.heightAnchor.constraint(equalToConstant: 50),
-            saveButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            saveButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            saveButton.topAnchor.constraint(equalTo: addToDeviceContactsSwitch.bottomAnchor, constant: 20),
+            saveButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 50),
+            saveButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -50),
+            saveButton.heightAnchor.constraint(equalToConstant: 50) // Set the height of the save button
         ])
     }
     
     @objc func handleSave(_ sender: UIButton) {
-        if nameTextField.text != "" && phoneTextField.text != "" {
-            delegate?.save(name: nameTextField.text!, phone: phoneTextField.text!)
-            dismiss(animated: true, completion: nil)
-        } else {
-            errorLabel.textColor = .systemRed
-        }
+        guard let name = nameTextField.text, let phone = phoneTextField.text else { return }
         
-        startTimer()
+        let addToDeviceContacts = addToDeviceContactsSwitch.isOn
+        delegate?.save(name: name, phone: phone, addToDeviceContacts: addToDeviceContacts)
+        dismiss(animated: true, completion: nil)
     }
 }
 
@@ -136,7 +114,7 @@ extension AddContactVC: UITextFieldDelegate {
         if textField == nameTextField {
             phoneTextField.becomeFirstResponder()
         } else if textField == phoneTextField {
-            textField.becomeFirstResponder()
+            textField.resignFirstResponder()
         }
         return true
     }

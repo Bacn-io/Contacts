@@ -1,6 +1,15 @@
 import UIKit
 import Contacts
 
+// Protocols to manage changes and deletions in contacts
+protocol ChangeDataProtocol {
+    func change(_ name: String, _ phone: String, _ index: Int, _ image: UIImage?)
+}
+
+protocol DeleteContactProtocol {
+    func delete(_ index: Int)
+}
+
 class ViewController: UIViewController {
     
     var contacts: [Contact] = []
@@ -53,6 +62,7 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
         detailVC.changed_phone = contacts[indexPath.row].phone
         detailVC.delegate = self
         detailVC.delegateChange = self
+        detailVC.contacts = contacts // Pass the contacts array
         navigationController?.pushViewController(detailVC, animated: true)
     }
     
@@ -101,27 +111,35 @@ extension ViewController {
 }
 
 extension ViewController: AddContactProtocol, DeleteContactProtocol, ChangeDataProtocol {
-    func change(_ name: String, _ phone: String, _ index: Int, _ image: UIImage) {
-        if let imageData = image.pngData() { // Convert UIImage to Data
+    func change(_ name: String, _ phone: String, _ index: Int, _ image: UIImage?) {
+        if let image = image, let imageData = image.pngData() {
             contacts[index] = Contact(name: name, phone: phone, image: imageData, identifier: "")
             tableView.reloadData()
         } else {
-            print("Failed to convert image to data")
+            contacts[index] = Contact(name: name, phone: phone, image: nil, identifier: "")
+            tableView.reloadData()
         }
     }
     
-    func save(name: String, phone: String) {
-        contacts.append(Contact(name: name, phone: phone, image: nil, identifier: ""))
-        tableView.reloadData()
+    func save(name: String, phone: String, addToDeviceContacts: Bool) {
+        if addToDeviceContacts {
+            let store = CNContactStore()
+            let contact = CNMutableContact()
+            contact.givenName = name
+            contact.phoneNumbers = [CNLabeledValue(label: CNLabelPhoneNumberMain, value: CNPhoneNumber(stringValue: phone))]
+            let saveRequest = CNSaveRequest()
+            saveRequest.add(contact, toContainerWithIdentifier: nil)
+            do {
+                try store.execute(saveRequest)
+                print("Contact saved to device contacts")
+            } catch {
+                print("Error saving contact to device contacts: \(error.localizedDescription)")
+            }
+        }
     }
     
     func delete(_ index: Int) {
         contacts.remove(at: index)
-        tableView.reloadData()
-    }
-    
-    func change(_ name: String, _ phone: String, _ index: Int) {
-        contacts[index] = Contact(name: name, phone: phone, image: nil, identifier: "")
         tableView.reloadData()
     }
 }
@@ -132,6 +150,8 @@ extension ViewController: UITextFieldDelegate {
     }
 
     func fetchContacts() {
+        contacts.removeAll() // Clear the existing contacts array
+        
         let store = CNContactStore()
         let keys = [CNContactGivenNameKey, CNContactPhoneNumbersKey, CNContactImageDataKey, CNContactIdentifierKey] as [CNKeyDescriptor] // Include CNContactIdentifierKey
         let request = CNContactFetchRequest(keysToFetch: keys)

@@ -2,18 +2,11 @@ import UIKit
 import Contacts
 import ContactsUI
 
-protocol DeleteContactProtocol {
-    func delete(_ index: Int)
-}
-
-protocol ChangeDataProtocol {
-    func change(_ name: String, _ phone: String, _ index: Int, _ image: UIImage)
-}
-
-class EditingVC: UIViewController {
+class EditingVC: UIViewController, UITextFieldDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     var delegate: DeleteContactProtocol?
     var delegateChange: ChangeDataProtocol?
+    var contacts: [Contact] = [] // Define the contacts array
     
     let nameTF = UITextField()
     let phoneTF = UITextField()
@@ -34,44 +27,16 @@ class EditingVC: UIViewController {
         nameTF.delegate = self
         phoneTF.delegate = self
         
-        configureSaveButton()
         configureNameTF()
         configurePhoneTF()
-        configureDeleteButton()
         configureAddPhotoButton()
+        configureChangeButton()
+        configureDeleteButton()
         
         self.view.backgroundColor = .white
         
         nameTF.text = changed_name
         phoneTF.text = changed_phone
-    }
-    
-    
-    @objc func deleteData() {
-        delegate?.delete(index!)
-        navigationController?.popViewController(animated: true)
-    }
-    
-    
-    @objc func changeButtonTapped() {
-        
-        if nameTF.text != "" && phoneTF.text != "" {
-            changed_name = nameTF.text ?? ""
-            changed_phone = phoneTF.text ?? ""
-            
-            delegateChange?.change(changed_name, changed_phone, index!, profileImage ?? UIImage())
-            
-            navigationController?.popViewController(animated: true)
-        }
-    }
-    
-    @objc func addPhotoButtonTapped() {
-        let newContact = CNMutableContact() // Create a new instance of CNMutableContact
-        let contactPicker = CNContactViewController(forUnknownContact: newContact)
-        contactPicker.delegate = self
-        contactPicker.allowsEditing = true
-        contactPicker.view.backgroundColor = UIColor.white
-        navigationController?.pushViewController(contactPicker, animated: true)
     }
     
     func configureNameTF() {
@@ -83,7 +48,7 @@ class EditingVC: UIViewController {
         NSLayoutConstraint.activate([
             nameTF.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             nameTF.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            nameTF.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20), // Anchor to safe area top
+            nameTF.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             nameTF.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
@@ -97,17 +62,35 @@ class EditingVC: UIViewController {
         NSLayoutConstraint.activate([
             phoneTF.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             phoneTF.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            phoneTF.topAnchor.constraint(equalTo: nameTF.bottomAnchor, constant: 20), // Anchor to nameTF bottom
+            phoneTF.topAnchor.constraint(equalTo: nameTF.bottomAnchor, constant: 20),
             phoneTF.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
     
-    func configureSaveButton() {
-        // Configuration code
+    func configureDeleteButton() {
+        view.addSubview(deleteButton)
+        deleteButton.addTarget(self, action: #selector(deleteData), for: .touchUpInside)
+        deleteButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            deleteButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            deleteButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            deleteButton.topAnchor.constraint(equalTo: changeButton.bottomAnchor, constant: 20),
+            deleteButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
     }
     
-    func configureDeleteButton() {
-        // Configuration code
+    func configureChangeButton() {
+        view.addSubview(changeButton)
+        changeButton.addTarget(self, action: #selector(changeButtonTapped), for: .touchUpInside)
+        changeButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        NSLayoutConstraint.activate([
+            changeButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            changeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            changeButton.topAnchor.constraint(equalTo: addPhotoButton.bottomAnchor, constant: 20),
+            changeButton.heightAnchor.constraint(equalToConstant: 50)
+        ])
     }
     
     func configureAddPhotoButton() {
@@ -118,25 +101,83 @@ class EditingVC: UIViewController {
         NSLayoutConstraint.activate([
             addPhotoButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
             addPhotoButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-            addPhotoButton.topAnchor.constraint(equalTo: phoneTF.bottomAnchor, constant: 20), // Anchor to phoneTF bottom
+            addPhotoButton.topAnchor.constraint(equalTo: phoneTF.bottomAnchor, constant: 20),
             addPhotoButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
-}
-
-extension EditingVC: UITextFieldDelegate {
-    // TextField Delegate methods
-}
-
-extension EditingVC: CNContactViewControllerDelegate {
-    func contactViewController(_ viewController: CNContactViewController, didCompleteWith contact: CNContact?) {
-        guard let contact = contact else {
-            navigationController?.popViewController(animated: true)
+    
+    @objc func deleteData() {
+        guard let index = index else { return }
+        delegate?.delete(index)
+        navigationController?.popViewController(animated: true)
+    }
+    
+    @objc func changeButtonTapped() {
+        guard let name = nameTF.text, !name.isEmpty,
+              let phone = phoneTF.text, !phone.isEmpty,
+              let index = index else {
+            let alert = UIAlertController(title: "Error", message: "Name and phone cannot be empty.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+            present(alert, animated: true)
             return
         }
-        if let imageData = contact.thumbnailImageData, let image = UIImage(data: imageData) {
-            profileImage = image
+        
+        // Check for permission and then attempt to update the contact
+        let store = CNContactStore()
+        store.requestAccess(for: .contacts) { [weak self] granted, error in
+            if granted {
+                guard let identifier = self?.contacts[index].identifier else { return }
+                self?.updateContactInStore(name: name, phone: phone, image: self?.profileImage, identifier: identifier)
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Success", message: "Your changes have been saved.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    self?.present(alert, animated: true)
+                    self?.navigationController?.popViewController(animated: true)
+                }
+            } else {
+                DispatchQueue.main.async {
+                    let alert = UIAlertController(title: "Error", message: "Contact access denied. Please enable it in settings.", preferredStyle: .alert)
+                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                    self?.present(alert, animated: true)
+                }
+            }
         }
-        navigationController?.popViewController(animated: true)
+    }
+    
+    func updateContactInStore(name: String, phone: String, image: UIImage?, identifier: String) {
+        let store = CNContactStore()
+        let keys = [CNContactGivenNameKey, CNContactPhoneNumbersKey, CNContactImageDataKey] as [CNKeyDescriptor]
+        let request = CNSaveRequest()
+        do {
+            let predicate = CNContact.predicateForContacts(withIdentifiers: [identifier])
+            let contacts = try store.unifiedContacts(matching: predicate, keysToFetch: keys)
+            if let contact = contacts.first?.mutableCopy() as? CNMutableContact {
+                contact.givenName = name
+                contact.phoneNumbers = [CNLabeledValue(label: CNLabelPhoneNumberMain, value: CNPhoneNumber(stringValue: phone))]
+                if let imageData = image?.jpegData(compressionQuality: 1.0) {
+                    contact.imageData = imageData
+                }
+                request.update(contact)
+                try store.execute(request)
+                print("Contact updated successfully")
+            }
+        } catch {
+            print("Failed to update contact: \(error)")
+        }
+    }
+    
+    @objc func addPhotoButtonTapped() {
+        let imagePicker = UIImagePickerController()
+        imagePicker.delegate = self
+        imagePicker.allowsEditing = true
+        imagePicker.sourceType = .photoLibrary // Use .camera to allow taking a new photo
+        present(imagePicker, animated: true, completion: nil)
+    }
+    
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        if let editedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage {
+            profileImage = editedImage
+        }
+        dismiss(animated: true, completion: nil)
     }
 }
